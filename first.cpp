@@ -1,9 +1,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <iostream>
 
 #include "Shader.h"
+#include "Texture2D.h"
 
-#include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -13,10 +14,10 @@ unsigned int VAO;
 unsigned int EBO;
 
 float vertices[] = {
-	-0.5f, -0.5f, 0.0f,
-	-0.5f,  0.5f, 0.0f,
-	 0.5f,  0.5f, 0.0f,
-	 0.5f, -0.5f, 0.0f
+	-0.5f, -0.5f, 0.0f,		0.0f, 0.0f,
+	-0.5f,  0.5f, 0.0f,		0.0f, 1.0f,
+	 0.5f,  0.5f, 0.0f,		1.0f, 1.0f,
+	 0.5f, -0.5f, 0.0f,		1.0f, 0.0f
 };
 
 unsigned int indices[] = {
@@ -60,14 +61,15 @@ int main(int argc, char** argv)
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
 	
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	Shader shader("shader.vert", "shader.frag");
+	Texture2D texture("brickwall.jpg");
 
 	while(!glfwWindowShouldClose(window))
 	{
@@ -79,6 +81,7 @@ int main(int argc, char** argv)
 		float time1 = glfwGetTime();
 		shader.SetVec4("time1", time1, time1, time1, time1);
 		shader.Use();
+		texture.Use();
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
