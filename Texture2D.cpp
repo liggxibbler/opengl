@@ -3,6 +3,7 @@
 
 Texture2D::Texture2D(const char* path)
 {
+	stbi_set_flip_vertically_on_load(true);
 	m_data = stbi_load(path, &m_width, &m_height, &m_nrChannels, 0);
 	glGenTextures(1, &m_texture);
 	glBindTexture(GL_TEXTURE_2D, m_texture);
@@ -24,7 +25,8 @@ Texture2D::Texture2D(const char* path)
 	stbi_image_free(m_data);	
 }
 
-void Texture2D::Use()
+void Texture2D::Use(GLenum unit)
 {
+	glActiveTexture(unit);
 	glBindTexture(GL_TEXTURE_2D, m_texture);
 }

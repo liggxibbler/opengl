@@ -8,7 +8,7 @@ class Texture2D
 {
 	public:
 		Texture2D(const char* path);
-		void Use();
+		void Use(GLenum unit);
 	private:
 		unsigned char* m_data;
 		int m_width;

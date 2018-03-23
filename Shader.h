@@ -15,7 +15,9 @@ class Shader
 		void Use();
 		void SetFloat(const std::string& name, float value) const;
 		void SetVec4(const std::string& name, float x, float y, float z, float w) const;
-		//SetInt(std::string name, int value) const;
+		void SetInt(const std::string& name, int value) const;
+		void SetMatrix(const std::string& name, float* value) const;
+		
 		//SetBoolean(std::string name, bool value) const;
 	private:
 		unsigned int m_id;

@@ -5,9 +5,12 @@ out vec4 FragColor;
 
 uniform vec4 time1;
 uniform sampler2D texture0;
+uniform sampler2D texture1;
 
 void main()
 {
-	vec4 col = texture(texture0, UV0);
-	FragColor = col;// + vec4((sin(time1.x)+1)*.5, 0, 0, 1);
+	vec4 col0 = texture(texture0, UV0);
+	vec4 col1 = texture(texture1, UV0);
+
+	FragColor = mix(col0, col1, .2);
 }

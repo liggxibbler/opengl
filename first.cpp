@@ -2,6 +2,10 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "Shader.h"
 #include "Texture2D.h"
 
@@ -32,7 +36,7 @@ int main(int argc, char** argv)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	GLFWwindow* window = glfwCreateWindow(800,600, "LearnOpenGL", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(800, 800, "LearnOpenGL", NULL, NULL);
 	if (NULL == window)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -49,7 +53,7 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
-	glViewport(0, 0, 800, 600);
+	glViewport(0, 0, 800, 800);
 
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
@@ -69,7 +73,12 @@ int main(int argc, char** argv)
 	glEnableVertexAttribArray(1);
 
 	Shader shader("shader.vert", "shader.frag");
-	Texture2D texture("brickwall.jpg");
+	Texture2D texture0("brickwall.jpg");
+	Texture2D texture1("container.jpg");
+	shader.Use();
+	shader.SetInt("texture0", 0);
+	shader.SetInt("texture1", 1);
+
 
 	while(!glfwWindowShouldClose(window))
 	{
@@ -79,9 +88,14 @@ int main(int argc, char** argv)
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		float time1 = glfwGetTime();
-		shader.SetVec4("time1", time1, time1, time1, time1);
 		shader.Use();
-		texture.Use();
+		shader.SetVec4("time1", time1, time1, time1, time1);
+		texture0.Use(GL_TEXTURE0);
+		texture1.Use(GL_TEXTURE1);
+		glm::mat4 trans = glm::mat4(1.0f);
+		trans = glm::rotate(trans, glm::radians(time1), glm::vec3(0.0, 0.0, 1.0));
+		shader.SetMatrix("transform", glm::value_ptr(trans));
+
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
