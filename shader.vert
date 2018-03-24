@@ -5,7 +5,6 @@ layout (location = 1) in vec2 aUV0;
 
 out vec2 UV0;
 
-uniform vec4 time1;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
