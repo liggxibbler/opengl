@@ -6,10 +6,13 @@ layout (location = 1) in vec2 aUV0;
 out vec2 UV0;
 
 uniform vec4 time1;
-uniform mat4 transform;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
 
 void main()
 {
-	gl_Position = transform * vec4(aPos, 1.0);
+	mat4 mvp = projection * view * model;
+	gl_Position = mvp * vec4(aPos, 1.0);
 	UV0 = aUV0;
 }
