@@ -40,7 +40,8 @@ unsigned int indices[] = {
 	2, 3, 0
 };
 
-bool dump;
+glm::vec4 light_col(1.0f, 0.5f, 0.5f, 1.0f);
+glm::vec3 light_pos(0.0f, 2.0f, 0.0f);
 
 int main(int argc, char** argv)
 {
@@ -78,7 +79,7 @@ int main(int argc, char** argv)
 	cmodel.Initialize();
 
 	Camera camera(SCR_WIDTH, SCR_HEIGHT, 45.0f, .1f, 100.0f);
-	Shader shader("shader.vert", "shader.frag");
+	Shader shader("phong.vert", "phong.frag");
 	Texture2D texture0("brickwall.jpg");
 	Texture2D texture1("container.jpg");
 	shader.Use();
@@ -87,6 +88,8 @@ int main(int argc, char** argv)
 
 	float lastT = glfwGetTime();
 	float dt;
+
+	float shininess = 32.0f;
 
 	while(!glfwWindowShouldClose(window))
 	{
@@ -105,8 +108,13 @@ int main(int argc, char** argv)
 		texture1.Use(GL_TEXTURE1);		
 
 		camera.Update(dt, eulerVel, velocity, zoomVelocity);
+		glm::vec3 cameraPos = camera.GetPos();
 		shader.SetMatrix("projection", glm::value_ptr(camera.GetProjection()));
 		shader.SetMatrix("view", glm::value_ptr(camera.GetView()));
+		shader.SetVec4("light_pos", light_pos.x, light_pos.y, light_pos.z, 1.0f);
+		shader.SetVec4("light_col", light_col.x, light_col.y, light_col.z, light_col.w);
+		shader.SetVec4("eye_pos", cameraPos.x, cameraPos.y, cameraPos.z, 1.0f);
+		shader.SetVec4("shininess", shininess, shininess, shininess, shininess);
 
 		cmodel.Bind();
 		for (int i = 0; i < 10; ++i)
@@ -115,7 +123,8 @@ int main(int argc, char** argv)
 			model = glm::translate(model, positions[i]);
 			model = glm::rotate(model, glm::radians(time1 * 10.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 			shader.SetMatrix("model", glm::value_ptr(model));
-		
+			glm::mat4 normalTrans = glm::transpose(glm::inverse(model));
+			shader.SetMatrix("normalTrans", glm::value_ptr(normalTrans));
 			//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 			//glDrawArrays(GL_TRIANGLES, 0, 36);
 			cmodel.Draw(GL_TRIANGLES);
@@ -144,7 +153,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 void processInput(GLFWwindow* window)
 {
 	float speed = 2.5f;
-	dump = false;
 
 	velocity.x = 0.0f;
 	velocity.y = 0.0f;
@@ -160,8 +168,6 @@ void processInput(GLFWwindow* window)
 		velocity.x += speed;
 	if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		velocity.x -= speed;
-	if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-		dump = true;
 }
 
 float lastX = SCR_WIDTH / 2.0f;
