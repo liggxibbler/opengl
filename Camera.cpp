@@ -35,8 +35,8 @@ void Camera::Update(float dt, glm::vec3 dEuler, glm::vec3 dPos, float dFov)
 		m_projection = glm::perspective(glm::radians(m_fov), m_aspect, m_near, m_far);
 	}
 	
-	//if (dEuler.x != 0 || dEuler.y != 0)
-	//{	
+	if (dEuler.x != 0 || dEuler.y != 0)
+	{	
 		viewChanged = true;
 		m_euler += dEuler * dt;
 		if (m_euler.x > 89.0f)
@@ -53,14 +53,15 @@ void Camera::Update(float dt, glm::vec3 dEuler, glm::vec3 dPos, float dFov)
 
 		m_forward = glm::vec3( glm::cos(yaw) * glm::cos(pitch), glm::sin(pitch), glm::cos(pitch) * glm::sin(yaw));
 		m_right = glm::normalize(glm::cross(m_forward, m_up));
-	//}
+	}
 	
-	//if (dPos.x != 0 || dPos.y != 0 || dPos.z != 0)
-	//{
+	if (dPos.x != 0 || dPos.y != 0 || dPos.z != 0)
+	{
 		viewChanged = true;
 		glm::vec3 delPos = dPos * dt;
 		m_pos += delPos.z * m_forward + delPos.x * m_right + delPos.y * m_up;
-	//}
+		std::cout << "Pos " << m_pos.x << " " << m_pos.y << " " << m_pos.z << std::endl;
+	}
 
 	if (viewChanged)
 	{

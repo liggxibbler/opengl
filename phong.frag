@@ -19,14 +19,17 @@ void main()
 	vec4 col0 = texture(texture0, outUV0);
 	vec4 col1 = texture(texture1, outUV0);
 
-	float diffuse = max(dot(outNormal, light_pos.xyz - outWorldPos), 0);
+	vec3 toLight = light_pos.xyz - outWorldPos;
+	vec3 toEye = eye_pos.xyz - outWorldPos;
+	vec3 toLightNormal = normalize(toLight);
+	float atten = exp(length(toLight) * -.2);
 
-	vec3 toEye = normalize(eye_pos.xyz - outWorldPos);
-	vec3 fromSrc = normalize(outWorldPos - light_pos.xyz);
-	vec3 reflected = -2*dot(fromSrc, outNormal)*outNormal + fromSrc;
-	float specular = max (0, dot(toEye, reflected));
+	float diffuse = max(dot(outNormal, toLightNormal), 0);
+
+	vec3 reflected = 2 * dot(toLightNormal, outNormal)*outNormal - toLightNormal;
+	float specular = pow(max (0, dot(normalize(toEye), reflected)), 128);
 	
-	vec4 light_final = (diffuse + specular) * light_col;
+	vec4 light_final = (diffuse + specular) * light_col * atten;
 
-	FragColor = mix(col0, col1, .2) * light_final;
+	FragColor = mix(col0, col1, .5) * light_final;
 }

@@ -40,7 +40,7 @@ unsigned int indices[] = {
 	2, 3, 0
 };
 
-glm::vec4 light_col(1.0f, 0.5f, 0.5f, 1.0f);
+glm::vec4 light_col(1.0f, 1.0f, 1.0f, 1.0f);
 glm::vec3 light_pos(0.0f, 2.0f, 0.0f);
 
 int main(int argc, char** argv)
@@ -99,7 +99,7 @@ int main(int argc, char** argv)
 
 		processInput(window);
 
-		glClearColor(.2f, .3f, .3f, 1.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		shader.Use();
@@ -111,7 +111,8 @@ int main(int argc, char** argv)
 		glm::vec3 cameraPos = camera.GetPos();
 		shader.SetMatrix("projection", glm::value_ptr(camera.GetProjection()));
 		shader.SetMatrix("view", glm::value_ptr(camera.GetView()));
-		shader.SetVec4("light_pos", light_pos.x, light_pos.y, light_pos.z, 1.0f);
+		//shader.SetVec4("light_pos", light_pos.x, light_pos.y, light_pos.z, 1.0f);
+		shader.SetVec4("light_pos", cameraPos.x, cameraPos.y, cameraPos.z, 1.0f);
 		shader.SetVec4("light_col", light_col.x, light_col.y, light_col.z, light_col.w);
 		shader.SetVec4("eye_pos", cameraPos.x, cameraPos.y, cameraPos.z, 1.0f);
 		shader.SetVec4("shininess", shininess, shininess, shininess, shininess);
