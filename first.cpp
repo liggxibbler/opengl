@@ -9,6 +9,7 @@
 #include "Shader.h"
 #include "Texture2D.h"
 #include "Camera.h"
+#include "Model.h"
 
 #define SCR_WIDTH 800.0f
 #define SCR_HEIGHT 800.0f
@@ -16,10 +17,6 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-
-unsigned int VBO;
-unsigned int VAO;
-unsigned int EBO;
 
 glm::vec3 velocity;
 glm::vec3 eulerVel;
@@ -36,50 +33,6 @@ glm::vec3 positions[] = {
   glm::vec3( 1.5f,  2.0f, -2.5f), 
   glm::vec3( 1.5f,  0.2f, -1.5f), 
   glm::vec3(-1.3f,  1.0f, -1.5f)  
-};
-
-float vertices[] = {
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 };
 
 unsigned int indices[] = {
@@ -120,22 +73,9 @@ int main(int argc, char** argv)
 
 	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-
-	//glGenBuffers(1, &EBO);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
+	Model cmodel;
+	cmodel.InitCube();
+	cmodel.Initialize();
 
 	Camera camera(SCR_WIDTH, SCR_HEIGHT, 45.0f, .1f, 100.0f);
 	Shader shader("shader.vert", "shader.frag");
@@ -168,15 +108,17 @@ int main(int argc, char** argv)
 		shader.SetMatrix("projection", glm::value_ptr(camera.GetProjection()));
 		shader.SetMatrix("view", glm::value_ptr(camera.GetView()));
 
-		glBindVertexArray(VAO);
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		cmodel.Bind();
 		for (int i = 0; i < 10; ++i)
 		{			
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, positions[i]);
 			model = glm::rotate(model, glm::radians(time1 * 10.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 			shader.SetMatrix("model", glm::value_ptr(model));
-			glDrawArrays(GL_TRIANGLES, 0, 36);
+		
+			//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+			//glDrawArrays(GL_TRIANGLES, 0, 36);
+			cmodel.Draw(GL_TRIANGLES);
 		}
 		glBindVertexArray(0);
 
