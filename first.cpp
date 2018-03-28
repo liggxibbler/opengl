@@ -71,6 +71,8 @@ int main(int argc, char** argv)
 	}
 
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_STENCIL_TEST);
+	glStencilMask(0xFF);
 
 	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
@@ -79,17 +81,21 @@ int main(int argc, char** argv)
 	cmodel.Initialize();
 
 	Camera camera(SCR_WIDTH, SCR_HEIGHT, 45.0f, .1f, 100.0f);
-	Shader shader("phong.vert", "phong.frag");
+	Shader shdPhong("phong.vert", "phong.frag");
+	Shader shdOutline("phong.vert", "outline.frag");
 	Texture2D texture0("brickwall.jpg");
 	Texture2D texture1("container.jpg");
-	shader.Use();
-	shader.SetInt("texture0", 0);
-	shader.SetInt("texture1", 1);
+	shdPhong.Use();
+	shdPhong.SetInt("texture0", 0);
+	shdPhong.SetInt("texture1", 1);
 
 	float lastT = glfwGetTime();
 	float dt;
 
 	float shininess = 32.0f;
+
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClearStencil(0);
 
 	while(!glfwWindowShouldClose(window))
 	{
@@ -99,33 +105,63 @@ int main(int argc, char** argv)
 
 		processInput(window);
 
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		shader.Use();
-		shader.SetVec4("time1", time1, time1, time1, time1);
+		shdPhong.Use();
+		shdPhong.SetVec4("time1", time1, time1, time1, time1);
 		texture0.Use(GL_TEXTURE0);
 		texture1.Use(GL_TEXTURE1);		
 
 		camera.Update(dt, eulerVel, velocity, zoomVelocity);
 		glm::vec3 cameraPos = camera.GetPos();
-		shader.SetMatrix("projection", glm::value_ptr(camera.GetProjection()));
-		shader.SetMatrix("view", glm::value_ptr(camera.GetView()));
-		//shader.SetVec4("light_pos", light_pos.x, light_pos.y, light_pos.z, 1.0f);
-		shader.SetVec4("light_pos", cameraPos.x, cameraPos.y, cameraPos.z, 1.0f);
-		shader.SetVec4("light_col", light_col.x, light_col.y, light_col.z, light_col.w);
-		shader.SetVec4("eye_pos", cameraPos.x, cameraPos.y, cameraPos.z, 1.0f);
-		shader.SetVec4("shininess", shininess, shininess, shininess, shininess);
+		shdPhong.SetMatrix("projection", glm::value_ptr(camera.GetProjection()));
+		shdPhong.SetMatrix("view", glm::value_ptr(camera.GetView()));
+		//shdPhong.SetVec4("light_pos", light_pos.x, light_pos.y, light_pos.z, 1.0f);
+		shdPhong.SetVec4("light_pos", cameraPos.x, cameraPos.y, cameraPos.z, 1.0f);
+		shdPhong.SetVec4("light_col", light_col.x, light_col.y, light_col.z, light_col.w);
+		shdPhong.SetVec4("eye_pos", cameraPos.x, cameraPos.y, cameraPos.z, 1.0f);
+		shdPhong.SetVec4("shininess", shininess, shininess, shininess, shininess);
 
+		// Draw original Cubes
+		glStencilFunc(GL_ALWAYS, 1, 0xff);
+		glStencilMask(0xFF);
+		glEnable(GL_DEPTH_TEST);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 		cmodel.Bind();
 		for (int i = 0; i < 10; ++i)
 		{			
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, positions[i]);
 			model = glm::rotate(model, glm::radians(time1 * 10.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-			shader.SetMatrix("model", glm::value_ptr(model));
+			shdPhong.SetMatrix("model", glm::value_ptr(model));
 			glm::mat4 normalTrans = glm::transpose(glm::inverse(model));
-			shader.SetMatrix("normalTrans", glm::value_ptr(normalTrans));
+			shdPhong.SetMatrix("normalTrans", glm::value_ptr(normalTrans));
+			//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+			//glDrawArrays(GL_TRIANGLES, 0, 36);
+			cmodel.Draw(GL_TRIANGLES);
+		}
+
+		// Scale up and redraw the cubes
+		shdOutline.Use();
+
+		glStencilFunc(GL_NOTEQUAL, 1, 0xff);
+		glStencilMask(0xff);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+		glDisable(GL_DEPTH_TEST);
+		
+		shdOutline.SetMatrix("projection", glm::value_ptr(camera.GetProjection()));
+		shdOutline.SetMatrix("view", glm::value_ptr(camera.GetView()));
+		
+		float scale = 1.1f;	
+		for (int i = 0; i < 10; ++i)
+		{			
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, positions[i]);
+			model = glm::rotate(model, glm::radians(time1 * 10.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+			model = glm::scale(model, glm::vec3(scale, scale, scale));
+			shdOutline.SetMatrix("model", glm::value_ptr(model));
+			//glm::mat4 normalTrans = glm::transpose(glm::inverse(model));
+			//shdOutline.SetMatrix("normalTrans", glm::value_ptr(normalTrans));
 			//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 			//glDrawArrays(GL_TRIANGLES, 0, 36);
 			cmodel.Draw(GL_TRIANGLES);
