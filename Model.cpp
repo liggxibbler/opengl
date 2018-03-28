@@ -24,14 +24,17 @@ void Model::Initialize()
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_vert_count * m_vert_stride, m_vertices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, m_vert_stride * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, m_vert_stride * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
-	glEnableVertexAttribArray(2);
+	if(m_has_normal)
+	{
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, m_vert_stride * sizeof(float), (void*)(5 * sizeof(float)));
+		glEnableVertexAttribArray(2);
+	}
 }
 
 void Model::Bind()
@@ -41,13 +44,31 @@ void Model::Bind()
 
 void Model::Draw(GLenum primitive)
 {
-	glDrawArrays(primitive, 0, 36);//sizeof(m_vertices)/5);
+	glDrawArrays(primitive, 0, m_vert_count);
+}
+
+void Model::InitNDCQuad()
+{
+	m_vert_count = 6;
+	m_vert_stride = 5;
+	m_has_normal = false;
+
+	m_vertices = new float[m_vert_count * m_vert_stride] {
+		-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+		 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+		-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+
+		-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+		 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+		 1.0f, -1.0f, 0.0f, 1.0f, 0.0f
+	};
 }
 
 void Model::InitCube()
 {
 	m_vert_count = 36;
 	m_vert_stride = 8;
+	m_has_normal = true;
 
 	m_vertices = new float[m_vert_count * m_vert_stride] {
     -0.5f, -0.5f, -0.5f,	0.0f, 0.0f,		0.0f, 0.0f, -1.0f, 

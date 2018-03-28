@@ -10,9 +10,13 @@ class Model
 		Model(const char* path);
 		void Initialize();
 		void InitCube();
+		void InitNDCQuad();
 		void Bind();
 		void Draw(GLenum primitive);
+		//void SetMaterial(Material* material);
 	private:
+		bool m_has_normal;
+		//Material* m_material;
 		int m_vert_count;
 		int m_vert_stride;
 		float* m_vertices;

@@ -8,6 +8,7 @@
 
 #include "Shader.h"
 #include "Texture2D.h"
+#include "RenderTexture.h"
 #include "Camera.h"
 #include "Model.h"
 
@@ -33,11 +34,6 @@ glm::vec3 positions[] = {
   glm::vec3( 1.5f,  2.0f, -2.5f), 
   glm::vec3( 1.5f,  0.2f, -1.5f), 
   glm::vec3(-1.3f,  1.0f, -1.5f)  
-};
-
-unsigned int indices[] = {
-	0, 1, 2,
-	2, 3, 0
 };
 
 glm::vec4 light_col(1.0f, 1.0f, 1.0f, 1.0f);
@@ -76,18 +72,32 @@ int main(int argc, char** argv)
 
 	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
+	RenderTexture renderTexture(SCR_WIDTH, SCR_HEIGHT);
+
 	Model cmodel;
 	cmodel.InitCube();
 	cmodel.Initialize();
 
+	Model qmodel;
+	qmodel.InitNDCQuad();
+	qmodel.Initialize();
+
 	Camera camera(SCR_WIDTH, SCR_HEIGHT, 45.0f, .1f, 100.0f);
+
 	Shader shdPhong("phong.vert", "phong.frag");
-	Shader shdOutline("phong.vert", "outline.frag");
-	Texture2D texture0("brickwall.jpg");
-	Texture2D texture1("container.jpg");
 	shdPhong.Use();
 	shdPhong.SetInt("texture0", 0);
 	shdPhong.SetInt("texture1", 1);
+	
+	Shader shdOutline("phong.vert", "outline.frag");
+	
+	Shader shdQuad("quad.vert", "quad.frag");
+	shdQuad.Use();
+	shdQuad.SetInt("screenTex", 0);
+
+
+	Texture2D texture0("brickwall.jpg");
+	Texture2D texture1("container.jpg");
 
 	float lastT = glfwGetTime();
 	float dt;
@@ -104,6 +114,8 @@ int main(int argc, char** argv)
 		lastT = time1;
 
 		processInput(window);
+
+		renderTexture.Bind();
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -166,6 +178,14 @@ int main(int argc, char** argv)
 			//glDrawArrays(GL_TRIANGLES, 0, 36);
 			cmodel.Draw(GL_TRIANGLES);
 		}
+
+		renderTexture.Drop();
+		glDisable(GL_DEPTH_TEST);
+		qmodel.Bind();
+		shdQuad.Use();
+		renderTexture.Use(GL_TEXTURE0);
+		qmodel.Draw(GL_TRIANGLES);
+
 		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
