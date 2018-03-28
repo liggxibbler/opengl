@@ -60,7 +60,7 @@ void Camera::Update(float dt, glm::vec3 dEuler, glm::vec3 dPos, float dFov)
 		viewChanged = true;
 		glm::vec3 delPos = dPos * dt;
 		m_pos += delPos.z * m_forward + delPos.x * m_right + delPos.y * m_up;
-		std::cout << "Pos " << m_pos.x << " " << m_pos.y << " " << m_pos.z << std::endl;
+		//std::cout << "Pos " << m_pos.x << " " << m_pos.y << " " << m_pos.z << std::endl;
 	}
 
 	if (viewChanged)

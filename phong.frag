@@ -27,7 +27,7 @@ void main()
 	float diffuse = max(dot(outNormal, toLightNormal), 0);
 
 	vec3 reflected = 2 * dot(toLightNormal, outNormal)*outNormal - toLightNormal;
-	float specular = pow(max (0, dot(normalize(toEye), reflected)), 128);
+	float specular = pow(max (dot(normalize(toEye), reflected), 0), 128);
 	
 	vec4 light_final = (diffuse + specular) * light_col * atten;
 
