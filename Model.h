@@ -2,6 +2,14 @@
 #define MODEL_H_
 
 #include <glad/glad.h>
+#include <glm/glm.hpp>
+
+struct Vertex
+{
+	glm::vec3 Position;
+	glm::vec2 UV0;
+	glm::vec3 Normal;
+};
 
 class Model
 {
@@ -17,6 +25,7 @@ class Model
 	private:
 		bool m_has_normal;
 		//Material* m_material;
+		int m_index_count;
 		int m_vert_count;
 		int m_vert_stride;
 		float* m_vertices;
